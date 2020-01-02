@@ -1,31 +1,9 @@
 import React from 'react';
-import { StyleSheet, Text } from 'react-native';
-import { createAppContainer } from 'react-navigation';
-import { createStackNavigator } from 'react-navigation-stack';
-import LoginScreen from './components/LoginScreen';
-import CreateAccount from './components/CreateAccount';
+import { StyleSheet} from 'react-native';
 import Constants from 'expo-constants';
 import {Provider} from 'react-redux';
-import store from './src/config/store'
-
-const RootStack = createStackNavigator({
-  Login: LoginScreen,
-  Register: CreateAccount,
-}, {
-  initialRouteName: 'Login',
-}
-)
-
-LoginScreen.navigationOptions = {
-  header: null,
-}
-
-CreateAccount.navigationOptions = {
-  header: null,
-}
-
-const AppContainer = createAppContainer(RootStack);
-
+import store from './src/config/store';
+import { AppContainer } from './components/routes';
 export default class App extends React.Component {
   render() {
     return (<Provider store={store}><AppContainer style={{ height: Constants.statusBarHeight }} /></Provider>);

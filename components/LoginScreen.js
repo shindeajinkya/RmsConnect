@@ -1,6 +1,6 @@
 //import liraries
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TextInput, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TextInput, TouchableOpacity, KeyboardAvoidingView , AsyncStorage} from 'react-native';
 import * as Font from 'expo-font';
 
 // create a component
@@ -8,7 +8,9 @@ class LoginScreen extends Component {
   constructor() {
     super();
     this.state = {
-      fontLoaded: false
+      fontLoaded: false,
+      username: '',
+      password: '',
     }
   }
   componentDidMount = async () => {
@@ -16,34 +18,58 @@ class LoginScreen extends Component {
       'Montserrat-Light': require('../assets/fonts/Montserrat-Light.ttf'),
     });
     this.setState({ fontLoaded: true })
+    this._loadInitialState().done();
+  }
+  _loadInitialState = async () => {
+    var value = await AsyncStorage.getItem('user');
+    if(value !== null){
+      this.props.navigation.navigate('HomeScreen');
+    }
   }
   render() {
     return (
       <View style={styles.container}>
         {this.state.fontLoaded ? (
+          <View>
           <View style={styles.first}>
             <Text style={styles.greets}>Welcome!</Text>
+          </View>
+          <View style={styles.second}>
+            <TextInput 
+            style={styles.textbox} 
+            onChangeText={(username) => this.setState({username})}
+            placeholder="Username" 
+            placeholderTextColor="rgba(255,140,4,0.54)" 
+            />
+            <TextInput 
+            style={[styles.textbox, styles.textbox2]}
+            onChangeText={(password) => this.setState({password})} 
+            secureTextEntry 
+            placeholder="Password" 
+            placeholderTextColor="rgba(255,140,4,0.54)" 
+            />
+            <TouchableOpacity
+              style={styles.loginButton}
+              onPress={this.login}
+            >
+              <Text style={styles.buttonText}>Login</Text>
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Text style={styles.forgetButton}>Forget Password?</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.touchability} onPress={() => this.props.navigation.navigate('Register')}>
+              <Text style={styles.accountButton} >Create a account</Text>
+            </TouchableOpacity>
+          </View>
           </View>
         ) : (
             <ActivityIndicator size="large" />
           )}
-        <View style={styles.second}>
-          <TextInput style={styles.textbox} placeholder="Username" placeholderTextColor="rgba(255,140,4,0.54)" />
-          <TextInput style={[styles.textbox, styles.textbox2]} secureTextEntry placeholder="Password" placeholderTextColor="rgba(255,140,4,0.54)" />
-          <TouchableOpacity
-            style={styles.loginButton}
-          >
-            <Text style={styles.buttonText}>Login</Text>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Text style={styles.forgetButton}>Forget Password?</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.touchability} onPress={() => this.props.navigation.navigate('Register')}>
-            <Text style={styles.accountButton} >Create a account</Text>
-          </TouchableOpacity>
-        </View>
       </View>
     );
+  }
+  login = () => {
+    alert(this.state.username);
   }
 }
 
@@ -63,7 +89,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     fontSize: 50,
     fontFamily: 'Montserrat-Light',
-    top: 160,
+    top: 140,
+    marginLeft: 'auto',
+    marginRight: 'auto',
   },
   first: {
     flex: 1,
