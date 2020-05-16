@@ -3,13 +3,22 @@ import React, { Component } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TextInput, TouchableOpacity, KeyboardAvoidingView, ScrollView } from 'react-native';
 import Constants from 'expo-constants';
 import * as Font from 'expo-font';
+import Axios from 'axios';
 
 // create a component
 class CreateAccount extends Component {
   constructor() {
     super();
     this.state = {
-      fontLoaded: false
+      fontLoaded: false,
+      password: '',
+      confirmPassword: '',
+      firstname: '',
+      middlename: '',
+      lastname: '',
+      usercode: '',
+      email: '',
+      phonenumber: ''      
     }
   }
   componentDidMount = async () => {
@@ -30,26 +39,115 @@ class CreateAccount extends Component {
               <ActivityIndicator size="large" />
             )}
           <View style={styles.second}>
-            <TextInput multiline={true} style={styles.textbox} placeholder="First name" placeholderTextColor="rgba(255,140,4,0.54)" />
-            <TextInput multiline={true} style={[styles.textbox, styles.textbox2]} placeholder="Middle name" placeholderTextColor="rgba(255,140,4,0.54)" />
-            <TextInput multiline={true} style={[styles.textbox, styles.textbox3]} placeholder="Last name" placeholderTextColor="rgba(255,140,4,0.54)" />
-            <TextInput multiline={true} style={[styles.textbox, styles.textbox3]} placeholder="Age" placeholderTextColor="rgba(255,140,4,0.54)" />
-            <TextInput multiline={true} style={[styles.textbox, styles.textbox3]} placeholder="Gender" placeholderTextColor="rgba(255,140,4,0.54)" />
-            <TextInput multiline={true} style={[styles.textbox, styles.textbox3]} placeholder="Group Code" placeholderTextColor="rgba(255,140,4,0.54)" />
-            <TextInput multiline={true} keyboardType='phone-pad' style={[styles.textbox, styles.textbox3]} placeholder="Phone Number" placeholderTextColor="rgba(255,140,4,0.54)" />
-            <TextInput multiline={true} style={[styles.textbox, styles.textbox3]} placeholder="Email" placeholderTextColor="rgba(255,140,4,0.54)" />
+            <TextInput 
+            multiline={true} 
+            style={styles.textbox} 
+            placeholder="First name" 
+            placeholderTextColor="rgba(255,140,4,0.54)"
+            onChangeText={firstname => this.setState({firstname})} />
+
+            <TextInput 
+            multiline={true} 
+            style={[styles.textbox, styles.textbox2]} 
+            placeholder="Middle name" 
+            placeholderTextColor="rgba(255,140,4,0.54)"
+            onChangeText={middlename => this.setState({middlename})} />
+
+            <TextInput 
+            multiline={true} 
+            style={[styles.textbox, styles.textbox3]} 
+            placeholder="Last name" 
+            placeholderTextColor="rgba(255,140,4,0.54)"
+            onChangeText={lastname => this.setState({lastname})} />
+
+            <TextInput 
+            multiline={true} 
+            style={[styles.textbox, styles.textbox3]} 
+            placeholder="Code(Optional)" 
+            placeholderTextColor="rgba(255,140,4,0.54)"
+            onChangeText={usercode => this.setState({usercode})} />
+
+            <TextInput 
+            multiline={true} 
+            keyboardType='phone-pad' 
+            style={[styles.textbox, styles.textbox3]} 
+            placeholder="Phone Number" 
+            placeholderTextColor="rgba(255,140,4,0.54)"
+            onChangeText={phonenumber => this.setState({phonenumber})} />
+
+            <TextInput 
+            multiline={true} 
+            style={[styles.textbox, styles.textbox3]} 
+            placeholder="Email" 
+            placeholderTextColor="rgba(255,140,4,0.54)"
+            onChangeText={email => this.setState({email})} />
+
+            <TextInput 
+            multiline={true} 
+            style={[styles.textbox, styles.textbox3]} 
+            placeholder="password" 
+            placeholderTextColor="rgba(255,140,4,0.54)"
+            onChangeText={password => this.setState({password})} />
+
+            <TextInput 
+            multiline={true} 
+            style={[styles.textbox, styles.textbox3]} 
+            placeholder="confirm password" 
+            placeholderTextColor="rgba(255,140,4,0.54)"
+            onChangeText={confirmPassword => this.setState({confirmPassword})} />
+
             <TouchableOpacity
               style={styles.loginButton}
+              onPress={this.signup}
             >
               <Text style={styles.buttonText}>Sign Up!</Text>
             </TouchableOpacity>
+
             <TouchableOpacity style={styles.touchability} onPress={() => this.props.navigation.navigate('Login')}>
               <Text style={styles.accountButton} >Back to Login?</Text>
             </TouchableOpacity>
+
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
     );
+  }
+
+  signup = () => {
+    if(this.state.password != this.state.confirmPassword){
+      alert('Confirmed password and password should be the same.')
+    }
+    else if(
+      this.state.password &&
+      this.state.firstname &&
+      this.state.middlename &&
+      this.state.lastname &&
+      this.state.phonenumber &&
+      this.state.email
+    ){
+      let data = {
+        username: this.state.email,
+        password: this.state.password,
+        firstname: this.state.firstname,
+        middlename: this.state.middlename,
+        lastname: this.state.lastname,
+        email: this.state.email,
+        phonenumber: this.state.phonenumber,
+        usercode: this.state.usercode
+      }
+      Axios.post('http://192.168.2.5:3000/user', data)
+      .then(res => {
+        let obj = res.data
+        if(obj.success == true){
+          alert('Account created! Now login with your email and password.')
+          this.props.navigation.navigate('Login')
+        }else{
+          alert(obj.message)
+        }
+      })
+      .catch(err => console.log(err))
+      .done()
+    }
   }
 }
 

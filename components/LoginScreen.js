@@ -1,7 +1,8 @@
 //import liraries
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TextInput, TouchableOpacity, KeyboardAvoidingView , AsyncStorage} from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TextInput, TouchableOpacity, KeyboardAvoidingView , AsyncStorage, ActivityIndicatorBase} from 'react-native';
 import * as Font from 'expo-font';
+import Axios from 'axios';
 
 // create a component
 class LoginScreen extends Component {
@@ -11,6 +12,7 @@ class LoginScreen extends Component {
       fontLoaded: false,
       username: '',
       password: '',
+      loading: false,
     }
   }
   componentDidMount = async () => {
@@ -20,58 +22,119 @@ class LoginScreen extends Component {
     this.setState({ fontLoaded: true })
     this._loadInitialState().done();
   }
+
   _loadInitialState = async () => {
     var value = await AsyncStorage.getItem('user');
     if(value !== null){
-      this.props.navigation.navigate('HomeScreen');
+      let obj = JSON.parse(value)
+      if(obj.role == 'user'){
+        this.setState({loading: true})
+        this.props.navigation.navigate('UserViewDrawer', {name: `${obj.firstname} ${obj.lastname}`})
+      }
+      else{
+        this.setState({loading: true})
+        this.props.navigation.navigate('AdminViewDrawer', {name: `${obj.firstname} ${obj.lastname}`})
+      }
+    }
+    else{
+      this.setState({loading: true})
     }
   }
+
   render() {
-    return (
-      <View style={styles.container}>
-        {this.state.fontLoaded ? (
-          <View>
-          <View style={styles.first}>
-            <Text style={styles.greets}>Welcome!</Text>
-          </View>
-          <View style={styles.second}>
-            <TextInput 
-            style={styles.textbox} 
-            onChangeText={(username) => this.setState({username})}
-            placeholder="Username" 
-            placeholderTextColor="rgba(255,140,4,0.54)" 
-            />
-            <TextInput 
-            style={[styles.textbox, styles.textbox2]}
-            onChangeText={(password) => this.setState({password})} 
-            secureTextEntry 
-            placeholder="Password" 
-            placeholderTextColor="rgba(255,140,4,0.54)" 
-            />
-            <TouchableOpacity
-              style={styles.loginButton}
-              onPress={this.login}
-            >
-              <Text style={styles.buttonText}>Login</Text>
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Text style={styles.forgetButton}>Forget Password?</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.touchability} onPress={() => this.props.navigation.navigate('Register')}>
-              <Text style={styles.accountButton} >Create a account</Text>
-            </TouchableOpacity>
-          </View>
-          </View>
-        ) : (
-            <ActivityIndicator size="large" />
-          )}
-      </View>
-    );
+      if(this.state.fontLoaded && this.state.loading){
+      return (
+        <View style={styles.container}>
+            <View>
+            <View style={styles.first}>
+              <Text style={styles.greets}>Welcome!</Text>
+            </View>
+            <View style={styles.second}>
+
+              <TextInput 
+              style={styles.textbox} 
+              onChangeText={(username) => this.setState({username})}
+              placeholder="Username" 
+              placeholderTextColor="rgba(255,140,4,0.54)" 
+              />
+
+              <TextInput 
+              style={[styles.textbox, styles.textbox2]}
+              onChangeText={(password) => this.setState({password})} 
+              secureTextEntry 
+              placeholder="Password" 
+              placeholderTextColor="rgba(255,140,4,0.54)" 
+              />
+
+              <TouchableOpacity
+                style={styles.loginButton}
+                onPress={this.login}
+              >
+                <Text style={styles.buttonText}>Login</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity>
+                <Text style={styles.forgetButton}>Forget Password?</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.touchability} onPress={() => this.props.navigation.navigate('Register')}>
+                <Text style={styles.accountButton} >Create a account</Text>
+              </TouchableOpacity>
+
+            </View>
+            </View>
+        </View>
+      );
+    }
+    else {
+      return <ActivityIndicator style={styles.container}/>
+    }
   }
   login = () => {
-    alert(this.state.username);
+    let data = {
+      username: this.state.username,
+      password: this.state.password,
+    };
+    Axios.post('http://192.168.2.5:3000/auth', data)
+    .then(res => {
+      var obj = res.data;
+      if(obj.success === true){
+        AsyncStorage.setItem('user', JSON.stringify(obj))
+        if(obj.role == 'admin'){
+          this.props.navigation.navigate('AdminViewDrawer', obj);
+        }else{
+          this.props.navigation.navigate('UserViewDrawer', obj);
+        }
+      }else{
+        alert("Wrong credentials")
+      }
+    })
+    .catch(err => console.log(err))
+    .done();
+    // alert(JSON.stringify(data));
+    // fetch(`http://192.168.2.4:3000/auth`, {
+    //   method: 'POST',
+    //   headers: {
+    //     'Accept': 'application/json',
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify(data)
+    //   })
+    //   .then(response => response.json())
+    //   .then((res => {
+    //     var response = JSON.parse(res);
+    //     console.log(response);
+    //     if(response.success == true){
+    //       AsyncStorage.setItem('user', res);
+    //       this.props.navigation.navigate('Home');
+    //     }else{
+    //       alert("Wrong credentials")
+    //     }
+    //   })
+    //   ).done()
   }
 }
+
 
 // define your styles
 const styles = StyleSheet.create({
@@ -111,6 +174,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'Montserrat-Light',
     color: '#C4C4C4',
+    paddingLeft: 20,
+    paddingRight: 20,
   },
   textbox2: {
     marginTop: 26,

@@ -3,10 +3,10 @@ import { StyleSheet} from 'react-native';
 import Constants from 'expo-constants';
 import {Provider} from 'react-redux';
 import store from './src/config/store';
-import { AppContainer } from './components/routes';
+import { AppContainer, MainContainer } from './components/routes';
 export default class App extends React.Component {
   render() {
-    return (<Provider store={store}><AppContainer style={{ height: Constants.statusBarHeight }} /></Provider>);
+    return (<Provider store={store}><MainContainer style={{ height: Constants.statusBarHeight }} /></Provider>);
   }
 }
 
